@@ -147,6 +147,11 @@ class _WalletFormState extends State<WalletForm> {
                   ),
                 ), 
               ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
               SizedBox(
                 width: 350.0, 
                 child: TextFormField(
@@ -162,7 +167,7 @@ class _WalletFormState extends State<WalletForm> {
                 )
               )
             ],
-          ), 
+          ),
           Padding(padding: EdgeInsetsGeometry.only(top: 20.0)),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

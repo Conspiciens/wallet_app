@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_app/core/keys_manager.dart';
 import 'package:wallet_app/pages/new_wallet.dart';
-import 'package:wallet_app/core/secure_storage.dart';
 import 'package:wallet_app/pages/wallet.dart';
 
 class WalletsPage extends StatefulWidget {
@@ -59,7 +58,7 @@ class _WalletsPageState extends State<WalletsPage> {
 
               // if (keys == null)
                 ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 300),
+                  constraints: BoxConstraints(maxHeight: 1000),
                   child: CarouselView(
                     shape: const BeveledRectangleBorder(),
                     scrollDirection: Axis.vertical,
@@ -77,10 +76,19 @@ class _WalletsPageState extends State<WalletsPage> {
                           } 
 
                           final items = snapshot.data;
+                          print(items);
                           return ListView.builder(
                             itemCount: items.length,
                             itemBuilder: (context, index) {
-                              return WalletWidget(item: items[index]); 
+                              return WalletWidget(
+                                item: items[index], 
+                                onTap: () {
+                                      print("here");
+                                      print(items[index]);
+                                      if (!context.mounted) { return; } 
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) => WalletPage(itemKey: items[index]))); 
+                                }); 
                             }
                           ); 
                         }
@@ -98,23 +106,18 @@ class _WalletsPageState extends State<WalletsPage> {
 }
 
 class WalletWidget extends StatelessWidget {
-  final dynamic item; 
+  final String item; 
+  final VoidCallback onTap; 
 
-  const WalletWidget({super.key, required this.item}); 
+  const WalletWidget({super.key, required this.item, required this.onTap}); 
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () async {
-        SecureStorage storage = SecureStorage(); 
-        String? privateKey = await storage.readStorage(item);
-
-        if (privateKey == null) {
-          return; 
-        }
-
-        // Navigator.of(context).;
-      },
+      title: Text("Wallet"),
+      titleAlignment: ListTileTitleAlignment.center,
+      tileColor: Colors.lightBlue.shade200,
+      onTap: onTap,
     );    
   }
 }
