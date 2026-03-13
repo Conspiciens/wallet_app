@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:bcrypt/bcrypt.dart';
 
 /* Singleton to Manage the Secure Storage from IOS and Android */
 class SecureStorage {
@@ -19,7 +20,11 @@ class SecureStorage {
 
   Future<void> writeStorage(String key, String value) async {
     if (key == "") return; 
-    return await _storage.write(key: key, value: value); 
+    if (value == "") return; 
+
+    final String passHash = BCrypt.hashpw(value, BCrypt.gensalt()); 
+
+    return await _storage.write(key: key, value: passHash); 
   }
 
   Future<(String, String)> readFileAndPass(String key) async {
@@ -38,7 +43,9 @@ class SecureStorage {
       throw Exception("Password is empty");
     }
 
-    await _storage.write(key: key, value: pass); 
+    final String passHash = BCrypt.hashpw(pass, BCrypt.gensalt()); 
+
+    await _storage.write(key: key, value: passHash); 
     await _storage.write(key: "$key\\_f", value: jsonString);
   }
 }
