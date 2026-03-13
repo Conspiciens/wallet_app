@@ -1,3 +1,4 @@
+import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:wallet_app/core/keys_manager.dart';
 import 'package:wallet_app/core/secure_storage.dart';
@@ -176,7 +177,8 @@ Future<void> _dialogBuilder(
             child: const Text("Submit"), 
             onPressed: () async {
               String? pass = await SecureStorage().readStorage(item); 
-              if (pass == null || pass != passController.text) { return; }
+              if (pass == null) { return; }
+              if (BCrypt.checkpw(passController.text, pass)) { return; } 
               if (!context.mounted) { return; } 
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => WalletPage(itemKey: item)));
