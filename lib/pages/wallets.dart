@@ -38,7 +38,6 @@ class _WalletsPageState extends State<WalletsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
               Row(
@@ -55,15 +54,13 @@ class _WalletsPageState extends State<WalletsPage> {
                   ),
                 ]
               ), 
-
+              
               // if (keys == null)
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 1000),
-                  child: CarouselView(
-                    shape: const BeveledRectangleBorder(),
-                    scrollDirection: Axis.vertical,
-                    itemExtent: 100,
-                    children: [
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child:
                       FutureBuilder<List<String>>(
                         future: getKeys(), 
                         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -77,30 +74,36 @@ class _WalletsPageState extends State<WalletsPage> {
 
                           final items = snapshot.data;
                           print(items);
-                          return ListView.builder(
-                            itemCount: items.length,
-                            itemBuilder: (context, index) {
-                              return WalletWidget(
-                                item: items[index], 
-                                onTap: () {
-                                      print("here");
-                                      print(items[index]);
-                                      if (!context.mounted) { return; } 
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(builder: (context) => WalletPage(itemKey: items[index]))); 
-                                }); 
-                            }
+                          return SizedBox(
+                            height: 200,
+                            width: double.infinity,
+                            child: ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              itemCount: items.length,
+                              itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsetsGeometry.only(top: 20.0), 
+                                  child: WalletWidget(
+                                  item: items[index], 
+                                  onTap: () {
+                                        print("here");
+                                        print(items[index]);
+                                        if (!context.mounted) { return; } 
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(builder: (context) => WalletPage(itemKey: items[index]))); 
+                                  }),
+                                ); 
+                              }
+                            ), 
                           ); 
                         }
-
                       )
-                    ]
                   ), 
-                ), 
+                ]
+              ), 
             ]
           )
         ),
-      )
     );
   }
 }
@@ -114,9 +117,11 @@ class WalletWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text("Wallet"),
+      minTileHeight: 100,
+      title: Text(item),
       titleAlignment: ListTileTitleAlignment.center,
       tileColor: Colors.lightBlue.shade200,
+      enabled: true,
       onTap: onTap,
     );    
   }
