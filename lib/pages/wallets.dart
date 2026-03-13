@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_app/core/keys_manager.dart';
+import 'package:wallet_app/core/secure_storage.dart';
 import 'package:wallet_app/pages/new_wallet.dart';
 import 'package:wallet_app/pages/wallet.dart';
 
@@ -12,12 +13,20 @@ class WalletsPage extends StatefulWidget {
 
 class _WalletsPageState extends State<WalletsPage> {
   KeysManager? keys;
+  TextEditingController passController = TextEditingController(); 
 
   @override 
   void initState() {
     super.initState(); 
 
     _initKeys();
+  }
+
+  @override 
+  void dispose() {
+    passController.dispose(); 
+
+    super.dispose(); 
   }
 
   Future<void> _initKeys() async {
@@ -85,12 +94,8 @@ class _WalletsPageState extends State<WalletsPage> {
                                 padding: const EdgeInsetsGeometry.only(top: 20.0), 
                                   child: WalletWidget(
                                   item: items[index], 
-                                  onTap: () {
-                                        print("here");
-                                        print(items[index]);
-                                        if (!context.mounted) { return; } 
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(builder: (context) => WalletPage(itemKey: items[index]))); 
+                                  onTap: () async {
+                                    _dialogBuilder(context, passController, items[index]); 
                                   }),
                                 ); 
                               }
@@ -122,6 +127,10 @@ class WalletWidget extends StatelessWidget {
       titleAlignment: ListTileTitleAlignment.center,
       tileColor: Colors.lightBlue.shade200,
       enabled: true,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.black, width: 1), 
+        borderRadius: BorderRadius.circular(20), 
+      ),
       onTap: onTap,
     );    
   }
@@ -140,4 +149,40 @@ class _WalletBuilderState extends State<WalletBuilder> {
     // TODO: implement build
     throw UnimplementedError();
   }
+}
+
+Future<void> _dialogBuilder(
+  BuildContext context, 
+  TextEditingController passController, 
+  final item, 
+  ) {
+
+  return showDialog<void>(
+    context: context, 
+    builder: (BuildContext context){
+      return AlertDialog(
+        title: const Text("Enter your password for this Wallet!"), 
+        actions: <Widget>[
+          TextField(
+            controller: passController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(3.0)))
+            ),
+          ),     
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge
+            ), 
+            child: const Text("Submit"), 
+            onPressed: () async {
+              String? pass = await SecureStorage().readStorage(item); 
+              if (pass == null || pass != passController.text) { return; }
+              if (!context.mounted) { return; } 
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => WalletPage(itemKey: item)));
+            },
+          )
+        ]
+      ); 
+    });  
 }
