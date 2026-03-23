@@ -2,31 +2,67 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sql.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class SqliteManager {
     static SqliteManager? _instance; 
     Database? db; 
 
-    static Future<SqliteManager> _create(String pass) async {
-      String path = dotenv.get("DB_PATH"); 
+    static Future<SqliteManager> create(String pass) async {
+      if (_instance != null) return _instance!; 
 
-      var db = await openDatabase(
-        path, 
-        password: pass,  
-        version: 1, 
-        onCreate: (db, version) async {
-          var batch = db.batch(); 
+      String dbName = String.fromEnvironment("DB_PATH", defaultValue: "wallets.db"); 
+      final dir = await getDatabasesPath(); 
 
-          batch.execute('''CREATE TABLE Wallets 
-            (id INTEGER, PRIMARY KEY, name STRING, wallet_json STRING)'''); 
-          await batch.commit(); 
-        }
-      );
+      /* TODO: use join() */ 
+      String dbPth = "$dir/$dbName"; 
 
-      return SqliteManager._internal(db);
+      try {
+        var db = await openDatabase(
+          dbPth, 
+          password: pass,  
+          version: 1, 
+          onCreate: (db, version) async {
+            var batch = db.batch(); 
 
+            batch.execute('''CREATE TABLE IF NOT EXISTS Wallets 
+              (id TEXT PRIMARY KEY, 
+              name TEXT, 
+              wallet_json TEXT)'''); 
+            await batch.commit(); 
+          }
+        );
+
+        return SqliteManager._internal(db, _instance);
+      } catch (e) {
+        print("Error: $e"); 
+        throw Exception(e); 
+      }
+    }
+
+    Future<void> storeWallet(String name, String wallet_js) async {
+      var uuid = Uuid(); 
+
+      var u4 = uuid.v4(); 
+      await db?.insert('Wallets', {'id': u4, 'name': name, 'wallet_json': wallet_js}); 
+    }
+
+    Future<List<Map<String, Object?>>?> getWallet(String id) async {
+      List<Map<String, Object?>>? map = await db?.rawQuery('SELECT $id FROM Wallets'); 
+      
+      return map;  
+    }
+
+    Future<List<Map<String, Object?>>?> getWallets() async {
+      return await db?.rawQuery("SELECT * FROM Wallets"); 
+    }
+
+    Future<void> close() async {
+      if (db == null) return; 
+      await db!.close(); 
     }
 
     /* Private constructor */ 
-    SqliteManager._internal(Database this.db); 
+    SqliteManager._internal(Database this.db, _instance); 
 }

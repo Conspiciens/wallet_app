@@ -1,15 +1,16 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bcrypt/bcrypt.dart';
+import 'package:uuid/uuid.dart';
 
 /* Singleton to Manage the Secure Storage from IOS and Android */
 class SecureStorage {
-  static final SecureStorage _instance = SecureStorage._internal();  
+  static SecureStorage? _instance; 
   final FlutterSecureStorage _storage = FlutterSecureStorage(); 
 
   factory SecureStorage() {
-    return _instance; 
+    _instance ??= SecureStorage._internal(); 
+    return _instance!; 
   }
-
   /* Private constructor */ 
   SecureStorage._internal(); 
 
@@ -18,13 +19,31 @@ class SecureStorage {
     return await _storage.read(key: key); 
   }
 
-  Future<void> writeStorage(String key, String value) async {
+  Future<void> passStorage(String key) async {
+    if (key == "") return; 
+
+    var UUID = Uuid(); 
+    var uid = UUID.v4();
+
+    await _storage.write(key: key, value: uid);
+  }
+
+  Future<void> writeStorage(String key, String walletName, String value) async {
     if (key == "") return; 
     if (value == "") return; 
 
     final String passHash = BCrypt.hashpw(value, BCrypt.gensalt()); 
+    final String key_t = "$key\\_t"; 
 
-    return await _storage.write(key: key, value: passHash); 
+    await _storage.write(key: key_t, value: walletName); 
+    await _storage.write(key: key, value: passHash); 
+  }
+
+  Future<String?> getWalletName(String key) async {
+    if (key == "") return null;
+    final String key_t = "$key\\_t"; 
+
+    return await _storage.read(key: key_t); 
   }
 
   Future<(String, String)> readFileAndPass(String key) async {
@@ -36,7 +55,7 @@ class SecureStorage {
     return (pass, jsonString); 
   }
 
-  Future<void> writeFileAndPassStorage(String key, String jsonString, String pass) async {
+  Future<void> writeFileAndPassStorage(String key, String walletName, String jsonString, String pass) async {
     if (jsonString.isEmpty) {
       throw Exception("Empty Json file"); 
     } else if (pass.isEmpty) {
@@ -44,8 +63,10 @@ class SecureStorage {
     }
 
     final String passHash = BCrypt.hashpw(pass, BCrypt.gensalt()); 
+    final String key_t = "$key\\_t"; 
 
     await _storage.write(key: key, value: passHash); 
+    await _storage.write(key: key_t, value: walletName); 
     await _storage.write(key: "$key\\_f", value: jsonString);
   }
 }
