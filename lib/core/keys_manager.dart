@@ -1,41 +1,37 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KeysManager {
-  List<String> _keys = []; 
+  String _key = "mobile_keys_save"; 
   final SharedPreferences drive; 
   static final Future<KeysManager> _instance = _init(); 
 
-  static Future<KeysManager> getInstance() {
-    return _instance; 
+  static Future<KeysManager> getInstance() async {
+    return await _instance; 
   }
 
   static Future<KeysManager> _init() async {
     final drive = await SharedPreferences.getInstance();
     return KeysManager._internal(drive);
   }
+
   
-  Future<List<String>> getKeys() async {
-    await loadKeys(); 
-    return _keys;
-    // return drive.getStringList('mobile_keys.save') ?? [];
+  List<String> getKeys() {
+    return drive.getStringList('mobile_keys_save') ?? [];
   }
 
-  Future<void> loadKeys() async {
-    _keys = drive.getStringList('mobile_keys_save') ?? [];
-  }
+  String addKey() {
+    List<String> keys = drive.getStringList(_key) ?? []; 
 
-  Future<String> addKey() async {
-    String keyName = "Key${_keys.length.toString()}";  
+    String keyName = "Key${keys.length.toString()}";  
 
-    _keys.add(keyName); 
-    drive.setStringList('mobile_keys_save', _keys);
+    keys.add(keyName); 
+    drive.setStringList('mobile_keys_save', keys);
 
     return keyName;
   }
 
-  Future<void> clearKeys() async {
-    _keys.clear(); 
-    drive.setStringList('mobile_keys_save', _keys);
+  void clearKeys() {
+    drive.setStringList('mobile_keys_save', []);
   }
 
   KeysManager._internal(this.drive); 

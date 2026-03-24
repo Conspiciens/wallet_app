@@ -19,8 +19,13 @@ class SecureStorage {
     return await _storage.read(key: key); 
   }
 
-  Future<void> passStorage(String key) async {
+  Future<void> passStorageOrStoreWalletpass(String key, String? pass, bool isWallet) async {
     if (key == "") return; 
+
+    if (isWallet) {
+      await _storage.write(key: key, value: pass); 
+      return; 
+    } 
 
     var UUID = Uuid(); 
     var uid = UUID.v4();

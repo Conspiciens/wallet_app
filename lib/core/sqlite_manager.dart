@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sql.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
@@ -41,11 +40,8 @@ class SqliteManager {
       }
     }
 
-    Future<void> storeWallet(String name, String wallet_js) async {
-      var uuid = Uuid(); 
-
-      var u4 = uuid.v4(); 
-      await db?.insert('Wallets', {'id': u4, 'name': name, 'wallet_json': wallet_js}); 
+    Future<void> storeWallet(String id, String name, String wallet_js) async {
+      await db?.insert('Wallets', {'id': id, 'name': name, 'wallet_json': wallet_js}); 
     }
 
     Future<List<Map<String, Object?>>?> getWallet(String id) async {
