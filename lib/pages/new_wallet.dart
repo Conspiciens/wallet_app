@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:wallet_app/core/keys_manager.dart';
 import 'package:wallet_app/core/secure_storage.dart';
+import 'package:wallet_app/core/sqlite_manager.dart';
 import 'package:wallet_app/core/wallet_manager.dart';
 import 'package:web3dart/web3dart.dart'; 
 
 class NewWallet extends StatefulWidget {
+  final String email; 
 
-  const NewWallet({super.key}); 
+  const NewWallet({super.key, required this.email}); 
 
   @override
   State<NewWallet> createState() => _NewWalletState(); 
@@ -17,15 +18,16 @@ class _NewWalletState extends State<NewWallet> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SelectNewOrUploadWallet() 
+        child: SelectNewOrUploadWallet(email: widget.email) 
       ) 
     ); 
   }
 }
 
 class SelectNewOrUploadWallet extends StatefulWidget {
+  final String email; 
 
-  const SelectNewOrUploadWallet({super.key}); 
+  const SelectNewOrUploadWallet({super.key, required this.email}); 
 
   @override
   State<SelectNewOrUploadWallet> createState() => _SelectNewOrUploadWalletState(); 
@@ -55,7 +57,7 @@ class _SelectNewOrUploadWalletState extends State<SelectNewOrUploadWallet> {
           ToggleButtons(
             direction: Axis.horizontal,
             isSelected: _walletOptions, 
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(15.0),
             borderWidth: 0.5,
             borderColor: Colors.blue,
             selectedBorderColor: Colors.lightBlue,
@@ -71,19 +73,36 @@ class _SelectNewOrUploadWalletState extends State<SelectNewOrUploadWallet> {
               });
             },
             children: <Widget>[
-              Text("Create Wallet"), 
-              Text("Upload Wallet")
+              const Padding( 
+                padding: EdgeInsets.all(10.0), 
+                child: Text("Create Wallet", 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: Colors.black,
+                  )
+                ), 
+              ), 
+              const Padding(
+                padding: EdgeInsetsGeometry.all(10.0), 
+                child: Text("Upload Wallet", 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: Colors.black
+                  )
+                )
+              )
             ]
           ), 
-          _walletOptions[0] ? WalletForm() : WalletUpload()
+          _walletOptions[0] ? WalletForm(email: widget.email) : WalletUpload()
         ]
       );
   }
 }
 
 class WalletForm extends StatefulWidget {
+  final String email; 
 
-  const WalletForm({super.key}); 
+  const WalletForm({super.key, required this.email}); 
 
   @override 
   State<WalletForm> createState() => _WalletFormState(); 
@@ -94,7 +113,7 @@ class _WalletFormState extends State<WalletForm> {
   final OutlineInputBorder borderRoundness = OutlineInputBorder(
     borderRadius: BorderRadius.circular(8.0),
   ); 
-  KeysManager? keys;
+  SqliteManager? sqlite; 
   final SecureStorage storage = SecureStorage(); 
   final TextEditingController walletName = TextEditingController();
   final TextEditingController password = TextEditingController();
@@ -105,12 +124,15 @@ class _WalletFormState extends State<WalletForm> {
     _loadKeys(); 
   }
 
-  void _loadKeys() {
-    KeysManager.getInstance().then(
-      (value) => keys = value);
-    
-    if (keys == null) { return; }
-    keys?.loadKeys();
+  Future<void> _loadKeys() async  {
+    print("Loading keys..."); 
+    String? pass = await storage.readStorage(widget.email); 
+    if (pass == null) return; 
+
+    SqliteManager manager = await SqliteManager.create(pass);
+    setState(() {
+      sqlite = manager; 
+    });
   }
 
   @override
@@ -120,7 +142,6 @@ class _WalletFormState extends State<WalletForm> {
     walletName.dispose(); 
     password.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -142,13 +163,13 @@ class _WalletFormState extends State<WalletForm> {
                     filled: true, 
                     hintText: "Name of Wallet",
                     labelText: "Name Of Wallet",
-                    helperText: "Name of Wallet",
                     fillColor: Colors.white70
                   ),
                 ), 
               ),
             ],
           ),
+          Padding(padding: EdgeInsetsGeometry.only(top: 20.0)),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -161,7 +182,6 @@ class _WalletFormState extends State<WalletForm> {
                     filled: true, 
                     hintText: "Enter you password", 
                     labelText: "Enter your password", 
-                    helperText: "Enter your password", 
                     fillColor: Colors.white70
                   ),
                 )
@@ -174,25 +194,23 @@ class _WalletFormState extends State<WalletForm> {
             children: <Widget>[
               ElevatedButton(
                 onPressed: () async {
-                  if (keys == null) { 
-                    return; 
-                  }
-
-                  /* Add key */ 
-                  String? key = await keys?.addKey(); 
-
-                  if (key == null) { return; }
-
+                  print("Creaing new wallet..."); 
                   Wallet wallet = createWallet(password.text); 
                   String jsonString = wallet.toJson(); 
 
-                  await storage.writeFileAndPassStorage(key, 
-                    jsonString, password.text);                   
+                  if (sqlite == null) return;                 
+                  await sqlite?.storeWallet(walletName.text, jsonString); 
+                  print("Initialized " + walletName.text); 
 
                   if (!context.mounted) { return; } 
                   Navigator.of(context).pop();
                 }, 
-                child: const Text("Create Wallet") 
+                child: const Text("Create Wallet", 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: Colors.black
+                  ),
+                ) 
               )
             ],  
           )
