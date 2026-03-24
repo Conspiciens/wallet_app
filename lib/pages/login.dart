@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_auth_ui/supabase_auth_ui.dart';
+import 'package:wallet_app/core/secure_storage.dart';
 import 'package:wallet_app/pages/wallets.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,6 +11,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  SecureStorage storage = SecureStorage(); 
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +27,18 @@ class _LoginPageState extends State<LoginPage> {
               Padding(padding: const EdgeInsetsGeometry.only(top: 20.0)), 
               SupaEmailAuth(
                 onSignInComplete: (response) {
+                  if (response.user?.email == null) return; 
+
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => WalletsPage())
+                    MaterialPageRoute(builder: (context) => WalletsPage(email: response.user!.email!))
                   ); 
                 }, 
-                onSignUpComplete: (response) {
+                onSignUpComplete: (response) async {
+                  if (response.user?.email == null) return; 
+
+                  await storage.passStorage(response.user!.email!); 
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => WalletsPage())
+                    MaterialPageRoute(builder: (context) => WalletsPage(email: response.user!.email!))
                   ); 
                 },  
               ),
