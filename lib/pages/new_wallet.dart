@@ -200,12 +200,16 @@ class _WalletFormState extends State<WalletForm> {
                   Wallet wallet = createWallet(password.text); 
                   String jsonString = wallet.toJson(); 
 
+                  final salt = BCrypt.gensalt(); 
+                  final passHash = BCrypt.hashpw(password.text, salt); 
+
                   final uuid = Uuid(); 
                   var u4 = uuid.v4(); 
 
                   if (sqlite == null) return;                 
+                  print("Loading Creds.."); 
                   await sqlite?.storeWallet(u4, walletName.text, jsonString); 
-                  await SecureStorage().passStorageOrStoreWalletpass(u4, password.text, true); 
+                  await SecureStorage().passStorageOrStoreWalletpass(u4, passHash, true); 
 
                   print("Initialized " + walletName.text); 
 

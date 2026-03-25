@@ -187,7 +187,7 @@ Future<void> _dialogBuilder(
               String? pass = await SecureStorage().readStorage(wallet['id']); 
 
               if (pass == null) { return; }
-              // else if (!BCrypt.checkpw(passController.text, pass)) { return; } 
+              else if (!BCrypt.checkpw(passController.text, pass)) { return; } 
               else if (!context.mounted) { return; }
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => WalletPage(wallet: wallet, 
