@@ -1,20 +1,25 @@
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
-import 'package:wallet_app/core/keys_manager.dart';
 import 'package:wallet_app/core/secure_storage.dart';
+import 'package:wallet_app/core/sqlite_manager.dart';
 import 'package:wallet_app/pages/new_wallet.dart';
 import 'package:wallet_app/pages/wallet.dart';
+import 'package:flutter/foundation.dart';
 
 class WalletsPage extends StatefulWidget {
-  const WalletsPage({super.key}); 
+  final String email; 
+
+  const WalletsPage({super.key, required this.email}); 
   
   @override
   State<WalletsPage> createState() => _WalletsPageState(); 
 }
 
 class _WalletsPageState extends State<WalletsPage> {
-  KeysManager? keys;
+  SecureStorage storage = SecureStorage(); 
+  SqliteManager? sqlite; 
   TextEditingController passController = TextEditingController(); 
+  List<dynamic> items = []; 
 
   @override 
   void initState() {
@@ -31,19 +36,20 @@ class _WalletsPageState extends State<WalletsPage> {
   }
 
   Future<void> _initKeys() async {
-    KeysManager.getInstance().then(
-      (value) => keys = value);
-    
-    if (keys != null) { 
-      keys?.loadKeys();
-    }
+    String? pass = await storage.readStorage(widget.email); 
+
+    if (pass == null) return; 
+    sqlite = await SqliteManager.create(pass); 
+
+    var result = await sqlite?.getWallets(); 
+    if (result == null) return; 
+
+    setState(() {
+      items = List.from(result);     
+    });
   }
 
-  Future<List<String>> getKeys() async {
-    return keys != null ? keys?.getKeys() ?? Future.value([]) : Future.value([]);
-  }
-
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,58 +59,65 @@ class _WalletsPageState extends State<WalletsPage> {
               Row(
                 children: [ 
                   IconButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
+                    onPressed: () async {
+                      await Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => NewWallet()
+                          builder: (context) => NewWallet(email: widget.email)
                         )
                       ); 
+                      await _initKeys(); 
                     }, 
                     icon: Icon(Icons.add) 
                   ),
                 ]
               ), 
               
-              // if (keys == null)
               Row(
                 children: [
                   Expanded(
                     flex: 2,
                     child:
-                      FutureBuilder<List<String>>(
-                        future: getKeys(), 
-                        builder: (BuildContext context, AsyncSnapshot snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(child: Text('Error: ${snapshot.error}'));
-                          } else if (!snapshot.hasData) {
-                            return ListTile(); 
-                          } 
+                      SizedBox(
+                        height: 700,
+                        width: double.infinity,
+                        child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsetsGeometry.only(top: 20.0), 
+                                child: Dismissible(
+                                  key: Key(items[index]['name']), 
+                                  onDismissed: (direction) async {
+                                    /* TODO: Add confirmation when dimissing */ 
+                                    print(items[index]['id']);
 
-                          final items = snapshot.data;
-                          print(items);
-                          return SizedBox(
-                            height: 200,
-                            width: double.infinity,
-                            child: ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              itemCount: items.length,
-                              itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsetsGeometry.only(top: 20.0), 
-                                  child: WalletWidget(
-                                  item: items[index], 
-                                  onTap: () async {
-                                    _dialogBuilder(context, passController, items[index]); 
-                                  }),
-                                ); 
-                              }
-                            ), 
-                          ); 
-                        }
+                                    await sqlite?.removeWallet(items[index]['id']); 
+                                    await SecureStorage().removeKey(items[index]['id']);
+                                    
+                                    setState(() {
+                                      items.removeAt(index); 
+                                    });
+                                  },
+                                    child: Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadiusGeometry.circular(20.0),
+                                    ),
+                                    color: Colors.lightBlue.shade200,
+                                    child: WalletBuilder(
+                                      item: items[index]['name'], 
+                                      onTap: () async {
+                                        if (!context.mounted) return; 
+                                        _dialogBuilder(context, passController, items[index], _initKeys, widget.email); 
+                                      }, 
+                                    ),
+                                )
+                              )
+                            ); 
+                          }
+                        ), 
                       )
-                  ), 
+                  ) 
                 ]
               ), 
             ]
@@ -114,48 +127,43 @@ class _WalletsPageState extends State<WalletsPage> {
   }
 }
 
-class WalletWidget extends StatelessWidget {
-  final String item; 
-  final VoidCallback onTap; 
-
-  const WalletWidget({super.key, required this.item, required this.onTap}); 
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      minTileHeight: 100,
-      title: Text(item),
-      titleAlignment: ListTileTitleAlignment.center,
-      tileColor: Colors.lightBlue.shade200,
-      enabled: true,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.black, width: 1), 
-        borderRadius: BorderRadius.circular(20), 
-      ),
-      onTap: onTap,
-    );    
-  }
-}
-
 class WalletBuilder extends StatefulWidget {
-  const WalletBuilder({super.key});
+    final String item; 
+    final VoidCallback onTap; 
 
-  @override
-  State<StatefulWidget> createState() => _WalletBuilderState();
+    const WalletBuilder({super.key, required this.item, required this.onTap}); 
+    @override
+    State<StatefulWidget> createState() => _WalletBuilderState();
 }
 
 class _WalletBuilderState extends State<WalletBuilder> {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
+
+    @override
+    Widget build(BuildContext context) {
+      return ListTile(
+        minTileHeight: 100,
+        title: Text(widget.item),
+        titleAlignment: ListTileTitleAlignment.center,
+        tileColor: Colors.lightBlue.shade200,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadiusGeometry.circular(20.0),
+        ),
+        enabled: true,
+        leading: Icon(
+          Icons.wallet,
+          size: 40.0,
+        ),
+        onTap: widget.onTap,
+      );    
+    }
 }
 
 Future<void> _dialogBuilder(
   BuildContext context, 
   TextEditingController passController, 
-  final item, 
+  final wallet, 
+  AsyncCallback updateState,
+  final email
   ) {
 
   return showDialog<void>(
@@ -176,12 +184,15 @@ Future<void> _dialogBuilder(
             ), 
             child: const Text("Submit"), 
             onPressed: () async {
-              String? pass = await SecureStorage().readStorage(item); 
+              String? pass = await SecureStorage().readStorage(wallet['id']); 
+
               if (pass == null) { return; }
-              if (BCrypt.checkpw(passController.text, pass)) { return; } 
-              if (!context.mounted) { return; } 
+              // else if (!BCrypt.checkpw(passController.text, pass)) { return; } 
+              else if (!context.mounted) { return; }
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => WalletPage(itemKey: item)));
+                MaterialPageRoute(builder: (context) => WalletPage(wallet: wallet, 
+                  pass: passController.text, email: email))
+              );
             },
           )
         ]

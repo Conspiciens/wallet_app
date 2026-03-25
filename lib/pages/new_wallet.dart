@@ -1,8 +1,10 @@
+import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:wallet_app/core/secure_storage.dart';
 import 'package:wallet_app/core/sqlite_manager.dart';
 import 'package:wallet_app/core/wallet_manager.dart';
 import 'package:web3dart/web3dart.dart'; 
+import 'package:uuid/uuid.dart';
 
 class NewWallet extends StatefulWidget {
   final String email; 
@@ -198,8 +200,13 @@ class _WalletFormState extends State<WalletForm> {
                   Wallet wallet = createWallet(password.text); 
                   String jsonString = wallet.toJson(); 
 
+                  final uuid = Uuid(); 
+                  var u4 = uuid.v4(); 
+
                   if (sqlite == null) return;                 
-                  await sqlite?.storeWallet(walletName.text, jsonString); 
+                  await sqlite?.storeWallet(u4, walletName.text, jsonString); 
+                  await SecureStorage().passStorageOrStoreWalletpass(u4, password.text, true); 
+
                   print("Initialized " + walletName.text); 
 
                   if (!context.mounted) { return; } 
