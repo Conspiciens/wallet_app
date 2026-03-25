@@ -22,6 +22,7 @@ class SqliteManager {
           dbPth, 
           password: pass,  
           version: 1, 
+          readOnly: false,
           onCreate: (db, version) async {
             var batch = db.batch(); 
 
@@ -43,6 +44,11 @@ class SqliteManager {
     Future<void> storeWallet(String id, String name, String wallet_js) async {
       await db?.insert('Wallets', {'id': id, 'name': name, 'wallet_json': wallet_js}); 
     }
+
+    Future<void> removeWallet(String id) async {
+      if (id == "") return; 
+      await db?.rawQuery('DELETE FROM Wallets WHERE id = \'$id\''); 
+    } 
 
     Future<List<Map<String, Object?>>?> getWallet(String id) async {
       List<Map<String, Object?>>? map = await db?.rawQuery('SELECT $id FROM Wallets'); 

@@ -33,6 +33,11 @@ class SecureStorage {
     await _storage.write(key: key, value: uid);
   }
 
+  Future<void> removeKey(String key) async {
+    if (key == "") return; 
+    await _storage.delete(key: key); 
+  }
+
   Future<void> writeStorage(String key, String walletName, String value) async {
     if (key == "") return; 
     if (value == "") return; 
