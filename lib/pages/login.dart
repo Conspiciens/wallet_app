@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
                 onSignUpComplete: (response) async {
                   if (response.user?.email == null) return; 
 
-                  await storage.passStorage(response.user!.email!); 
+                  await storage.passStorageOrStoreWalletpass(response.user!.email!, null, false); 
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => WalletsPage(email: response.user!.email!))
                   ); 
