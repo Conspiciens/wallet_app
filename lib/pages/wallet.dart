@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_app/core/secure_storage.dart';
+import 'package:wallet_app/core/sqlite_manager.dart';
 import 'package:web3dart/web3dart.dart'; 
 
 class WalletPage extends StatefulWidget {
   final SecureStorage storage = SecureStorage(); 
-  final String itemKey; 
+  final Map<String, dynamic> wallet; 
+  final String pass; 
+  final String email; 
 
-  WalletPage({super.key, required this.itemKey});
+  WalletPage({super.key, required this.wallet, required this.pass, required this.email});
 
   @override
   State<StatefulWidget> createState() => _WalletPageState();
 }
 
 class _WalletPageState extends State<WalletPage> {
-  Wallet? wallet; 
+  SqliteManager? sqlite; 
+  Wallet? wallet;
 
   @override 
   void initState() {
@@ -23,10 +27,8 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void _loadWallet() async {
-    (String, String) record = await widget.storage.
-      readFileAndPass(widget.itemKey); 
-    
-    wallet = Wallet.fromJson(record.$2, record.$1);
+    final wallet_js = widget.wallet['wallet_json']; 
+    wallet = Wallet.fromJson(wallet_js, widget.pass);
   }
 
   @override
@@ -35,15 +37,17 @@ class _WalletPageState extends State<WalletPage> {
       body: SafeArea(
         child: Column(
           children: [
-              Padding(padding: EdgeInsetsGeometry.only(left: 10.0)),
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                }, 
-                icon: Icon(Icons.arrow_back_ios),
-                iconSize: 20.0,
-                alignment: Alignment.topLeft, 
-              ), 
+            Padding(padding: EdgeInsetsGeometry.only(left: 10.0)),
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                /* Pop the AlertDialog */
+                Navigator.of(context).pop();
+              }, 
+              icon: Icon(Icons.arrow_back_ios),
+              iconSize: 20.0,
+              alignment: Alignment.topLeft, 
+            ), 
           ],
         )
       )  
