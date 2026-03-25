@@ -2,6 +2,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sql.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 
 class SqliteManager {
@@ -14,8 +15,7 @@ class SqliteManager {
       String dbName = String.fromEnvironment("DB_PATH", defaultValue: "wallets.db"); 
       final dir = await getDatabasesPath(); 
 
-      /* TODO: use join() */ 
-      String dbPth = "$dir/$dbName"; 
+      String dbPth = join(dir, dbName); 
 
       try {
         var db = await openDatabase(
