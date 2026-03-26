@@ -33,9 +33,11 @@ class _liveChartWidget extends State<liveChart> {
     }
 
     void _initTrading() async {
-      setState(() async {
-        tradingHistory = await history.fetchTrades(); 
-      });
+      final response = await history.fetchTrades(); 
+      if (!mounted) return; 
+      setState(() {
+        tradingHistory = response; 
+      }); 
     }
 
     @override
