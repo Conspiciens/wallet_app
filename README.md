@@ -2,21 +2,23 @@
 
 <p align="center">
   <a href="https://hardhat.org/" target="_blank">
-    <img src="https://hardhat.org/images/hardhat-logo-dark.svg" width="400" alt="Hardhat Logo">
+    <img src="https://hardhat.org/images/hardhat-logo-dark.svg" height="150" width="150" alt="Hardhat Logo">
   </a>
   <a href="https://flutter.dev" target="_blank">
-    <img src="https://flutter.dev/assets/lockup_flutter_horizontal.549a1b7dd82615e8e9c95c1ade8cee42.svg" width="150" alt="Flutter Logo">
+    <img src="https://flutter.dev/assets/lockup_flutter_horizontal.549a1b7dd82615e8e9c95c1ade8cee42.svg" height="150" width="150" alt="Flutter Logo">
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://supabase.com" target="_blank">
-    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.svg#gh-dark-mode-only" width="250" alt="Supabase Logo">
+    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.svg#gh-dark-mode-only" height="150" width="150" alt="Supabase Logo">
   </a>
 </p>
 
 A Simple Wallet App that manages your crypto on your phone. Should be a simple app and I'll attempt to minimize attack vectors as much as possible. 
 
-<p algin="center"> 
+<p align="center"> 
     <img src="https://img.shields.io/badge/Hardhat-3.0.0-yellow?style=for-the-badge&logo=hardhat" alt="Hardhat 3">
+    <img src="https://img.shields.io/badge/flutter-blue" alt="Flutter">
+    <img src="https://img.shields.io/badge/supabase-darkgreen" alt="Supabase">
 </p> 
 
 
