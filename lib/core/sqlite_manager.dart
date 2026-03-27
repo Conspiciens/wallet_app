@@ -6,15 +6,14 @@ import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 
 class SqliteManager {
+    static const dbName = String.fromEnvironment("DB_PATH"); 
     static SqliteManager? _instance; 
     Database? db; 
 
     static Future<SqliteManager> create(String pass) async {
       if (_instance != null) return _instance!; 
 
-      String dbName = String.fromEnvironment("DB_PATH", defaultValue: "wallets.db"); 
       final dir = await getDatabasesPath(); 
-
       String dbPth = join(dir, dbName); 
 
       try {
@@ -23,6 +22,9 @@ class SqliteManager {
           password: pass,  
           version: 1, 
           readOnly: false,
+          onConfigure: (db) async {
+            await db.execute('PRAGMA journal_mode = WAL'); 
+          }, 
           onCreate: (db, version) async {
             var batch = db.batch(); 
 
