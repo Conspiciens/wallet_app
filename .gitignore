@@ -1,4 +1,4 @@
-# Miscellaneous
+#Miscellaneous
 *.class
 *.log
 *.pyc
@@ -12,7 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 .env
+.env.dev
 config.dev.json
+config.prod.json
 
 # IntelliJ related
 *.iml

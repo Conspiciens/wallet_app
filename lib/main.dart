@@ -5,7 +5,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/login.dart'; 
 
 void main() async {
-  await dotenv.load(fileName: ".env");
+  const TYPE = String.fromEnvironment("TYPE"); 
+  if (TYPE == "prod") {
+    await dotenv.load(fileName: ".env");
+  } else {
+    await dotenv.load(fileName: ".env.dev");
+  }
+
 
   await Supabase.initialize(
     url: dotenv.get("SUPABASE_URL"), 

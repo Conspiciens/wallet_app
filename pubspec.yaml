@@ -44,6 +44,9 @@ dependencies:
   flutter_keychain: ^2.5.0
   uuid: ^4.5.3
   path_provider: ^2.1.5
+  syncfusion_flutter_charts: ^33.1.45
+  ably_flutter: ^1.2.35
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +72,7 @@ flutter:
   assets: 
     - config.dev.json
     - .env
+    - .env.dev
 
   # To add assets to your application, add an assets section, like this:
   # assets:
