@@ -2,14 +2,14 @@
 
 <p align="center">
   <a href="https://hardhat.org/" target="_blank">
-    <img src="https://hardhat.org/assets/img/hardhat-logo.84805e7a.svg" width="400" alt="Hardhat Logo">
+    <img src="https://hardhat.org/images/hardhat-logo-dark.svg" width="400" alt="Hardhat Logo">
   </a>
   <a href="https://flutter.dev" target="_blank">
     <img src="https://flutter.dev/assets/lockup_flutter_horizontal.549a1b7dd82615e8e9c95c1ade8cee42.svg" width="150" alt="Flutter Logo">
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://supabase.com" target="_blank">
-    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--light.svg#gh-light-mode-only" width="250" alt="Supabase Logo">
+    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.svg#gh-dark-mode-only" width="250" alt="Supabase Logo">
   </a>
 </p>
 
