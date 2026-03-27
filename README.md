@@ -1,5 +1,19 @@
 # wallet_app
 
+<p align="center">
+  <a href="https://hardhat.org/" target="_blank">
+    <img src="https://hardhat.org/assets/img/hardhat-logo.84805e7a.svg" width="400" alt="Hardhat Logo">
+  </a>
+  <a href="https://flutter.dev" target="_blank">
+    <img src="https://storage.googleapis.com/cms-storage-bucket/0dbfcc7a59fef0e7245c.png" width="150" alt="Flutter Logo">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://supabase.com" target="_blank">
+    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--light.svg#gh-light-mode-only" width="250" alt="Supabase Logo">
+    <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.svg#gh-dark-mode-only" width="250" alt="Supabase Logo">
+  </a>
+</p>
+
 A Simple Wallet App that manages your crypto on your phone. Should be a simple app and I'll attempt to minimize attack vectors as much as possible. 
 
 <p algin="center"> 
