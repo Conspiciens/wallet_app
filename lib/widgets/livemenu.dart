@@ -29,7 +29,9 @@ class _liveChartWidget extends State<liveChart> {
     @override
     void initState() {
       super.initState();
-      _initTrading(); 
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initTrading(); 
+      }); 
     }
 
     void _initTrading() async {
@@ -44,14 +46,27 @@ class _liveChartWidget extends State<liveChart> {
     Widget build(BuildContext context) {
       return Column(children: [
         SfCartesianChart(
-          primaryXAxis: CategoryAxis(),
+          margin: EdgeInsets.zero,
+          plotAreaBorderWidth: 0,
+          primaryXAxis: CategoryAxis(
+            axisLine: AxisLine(width: 0),
+          ),
+          primaryYAxis: CategoryAxis(
+            axisLine: AxisLine(width: 0),
+          ),
           title: ChartTitle(text: "ETH-USD Trading"),
+          tooltipBehavior: TooltipBehavior(enable: true),
           legend: Legend(isVisible: false),
+          trackballBehavior: TrackballBehavior(
+            activationMode: ActivationMode.longPress,
+            enable: true, 
+          ),
           series: <CartesianSeries<Trade, double>>[
-            LineSeries(
+            AreaSeries(
               dataSource: tradingHistory,
               xValueMapper: (Trade trade, _) => trade.timestamp, 
               yValueMapper: (Trade trade, _) => trade.lastTradePrice,
+              color: Colors.purple.shade100,
               dataLabelSettings: DataLabelSettings(isVisible: true),
             )
           ],

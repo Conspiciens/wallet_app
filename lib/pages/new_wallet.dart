@@ -95,7 +95,7 @@ class _SelectNewOrUploadWalletState extends State<SelectNewOrUploadWallet> {
               )
             ]
           ), 
-          _walletOptions[0] ? WalletForm(email: widget.email) : WalletUpload()
+          _walletOptions[0] ? WalletForm(email: widget.email) : WalletUpload(email: widget.email)
         ]
       );
   }
@@ -232,17 +232,143 @@ class _WalletFormState extends State<WalletForm> {
 }
 
 class WalletUpload extends StatefulWidget {
-  const WalletUpload({super.key}); 
+  final String email; 
+  const WalletUpload({super.key, required this.email}); 
 
   @override
   State<WalletUpload> createState() => _WalletUploadState(); 
 } 
 
 class _WalletUploadState extends State<WalletUpload> {
+  SqliteManager? sqlite; 
+  SecureStorage storage = SecureStorage(); 
+  final OutlineInputBorder borderRoundness = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8.0),
+  ); 
+  TextEditingController walletName = TextEditingController(); 
+  TextEditingController walletPrivateKey = TextEditingController(); 
+  TextEditingController password = TextEditingController(); 
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKeys(); 
+  }
+
+  Future<void> _loadKeys() async  {
+    print("Loading keys..."); 
+    String? pass = await storage.readStorage(widget.email); 
+    if (pass == null) return; 
+
+    SqliteManager manager = await SqliteManager.create(pass);
+    setState(() {
+      sqlite = manager; 
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose(); 
+
+    walletPrivateKey.dispose(); 
+    walletName.dispose(); 
+    password.dispose(); 
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Form(
-      child: Column()
+      child: Column(
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 350.0,
+                child: TextFormField(
+                  controller: walletName,
+                  decoration: InputDecoration(
+                    border: borderRoundness,
+                    filled: true, 
+                    hintText: "Name of Wallet",
+                    labelText: "Name Of Wallet",
+                    fillColor: Colors.white70
+                  ),
+                ), 
+              ),
+            ],
+          ), 
+          Row(
+            children: [
+              SizedBox(
+                width: 350.0,
+                child: TextFormField(
+                  controller: walletPrivateKey,
+                  decoration: InputDecoration(
+                    border: borderRoundness,
+                    filled: true, 
+                    hintText: "Wallet Private Key",
+                    labelText: "Wallet Private Key",
+                    fillColor: Colors.white70
+                  ),
+                ), 
+              ),
+            ]
+          ),
+          Row(
+            children: [
+              SizedBox(
+                width: 350.0, 
+                child: TextFormField(
+                  controller: password,
+                  decoration: InputDecoration(
+                    border: borderRoundness, 
+                    filled: true, 
+                    hintText: "Enter you password", 
+                    labelText: "Enter your password", 
+                    fillColor: Colors.white70
+                  ),
+                )
+              )
+            ] 
+          ), 
+          Padding(padding: EdgeInsetsGeometry.only(top: 20.0)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () async {
+                  print("Creaing json file from existing Wallet..."); 
+                  Wallet wallet = existingWalletHex(password.text, walletPrivateKey.text); 
+                  String jsonString = wallet.toJson(); 
+
+                  final salt = BCrypt.gensalt(); 
+                  final passHash = BCrypt.hashpw(password.text, salt); 
+
+                  final uuid = Uuid(); 
+                  var u4 = uuid.v4(); 
+
+                  if (sqlite == null) return;                 
+                  print("Loading Creds.."); 
+                  await sqlite?.storeWallet(u4, walletName.text, jsonString); 
+                  await SecureStorage().passStorageOrStoreWalletpass(u4, passHash, true); 
+
+                  print("Initialized " + walletName.text); 
+
+                  if (!context.mounted) { return; } 
+                  Navigator.of(context).pop();
+                }, 
+                child: const Text("Create Existing Wallet", 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: Colors.black
+                  ),
+                ) 
+              )
+            ],  
+          )
+        ],
+      )
     ); 
   }
 } 
