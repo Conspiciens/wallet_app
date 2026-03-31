@@ -50,7 +50,6 @@ class _WalletPageState extends State<WalletPage> {
           children: [
             Row(
               children: [
-                Padding(padding: EdgeInsetsGeometry.only(left: 0.0)),
                 IconButton(
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -63,11 +62,43 @@ class _WalletPageState extends State<WalletPage> {
                 ), 
               ]
             ),
+            Row(
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      "ETH",
+                      style: TextStyle(
+                        fontSize: 30, 
+                        color: Colors.deepPurple, 
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsetsGeometry.only(left: 30.0),
+                      child: Text(
+                        "\$2000",
+                        style: TextStyle(
+                          fontSize: 30, 
+                          color: Colors.purple.shade500, 
+                        )
+                      )
+                    )
+                  ]
+                ), 
+              ]
+            ),
             Padding(padding: EdgeInsetsGeometry.only(top: 20.0)), 
-            liveChart(), 
+            Row(
+              mainAxisSize: MainAxisSize.max, 
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(child: liveChart())
+              ]
+            ),
             Row(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(padding: EdgeInsetsGeometry.only(top: 100.0)),
                 Column(
@@ -91,15 +122,21 @@ class _WalletPageState extends State<WalletPage> {
                 SizedBox(width: 100.0, height: 0.0), 
                 Column( 
                   children: [
-                      Text("Market Value", 
-                        style: TextStyle(
-                          fontSize: font_size_title
-                        ),
+                    Text("Market Value", 
+                      style: TextStyle(
+                        fontSize: font_size_title,
+                        color: Colors.deepPurple, 
                       ),
-                      Text("30.0")
+                    ),
+                    Text("30.0",
+                      style: TextStyle(
+                        fontSize: font_size_indictator, 
+                        color: Colors.deepPurple, 
+                        fontWeight: FontWeight.bold
+                      )
+                    )
                   ] 
                 ), 
-                // Padding(padding: EdgeInsets.only(right: 0.0))
               ] 
             ), 
             ElevatedButton(
