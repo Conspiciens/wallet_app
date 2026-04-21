@@ -2,16 +2,17 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sql.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wallet_app/core/config.dart'; 
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 
 class SqliteManager {
-    static const dbName = String.fromEnvironment("DB_PATH"); 
+    static String dbName = Config.DBNAME;
     static SqliteManager? _instance; 
     Database? db; 
 
     static Future<SqliteManager> create(String pass) async {
-      if (_instance != null) return _instance!; 
+      if (_instance != null) { return _instance!; }; 
 
       final dir = await getDatabasesPath(); 
       String dbPth = join(dir, dbName); 
@@ -36,7 +37,8 @@ class SqliteManager {
           }
         );
 
-        return SqliteManager._internal(db, _instance);
+        _instance ??= SqliteManager._internal(db, _instance);
+        return _instance!;
       } catch (e) {
         print("Error: $e"); 
         throw Exception(e); 
